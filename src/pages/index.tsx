@@ -3,17 +3,26 @@ import Form from '../components/Form'
 import Layout from '../components/Layout'
 import Table from '../components/Table'
 import Client from '../core/Client'
-import { useState } from 'react'
+import ClientRepo from '../core/ClientRepo'
+import ClientColection from '../../backend/db/ClientColection'
+import { useEffect, useState } from 'react'
 
 export default function Home() {
+
+  const repo: ClientRepo = new ClientColection()
   
   const [client, setClient] = useState<Client>(Client.vazio())
+  const [clients, setClients] = useState<Client[]>([])
   const [visible, setVisible] = useState<'table' | 'form'>('table')
-  const clients = [
-    new Client('Ana', 31, '1'),
-    new Client('Bia', 11, '2'),
-    new Client('Aluiz', 51, '3')
-  ]
+
+  useEffect(getAll, [])
+
+  function getAll() {
+    repo.getAll().then(clients => {
+      setClients(clients)
+      setVisible('table')
+    })
+  }
 
   function selectedClient(client: Client) {
     setClient(client)
@@ -25,13 +34,14 @@ export default function Home() {
     setVisible('form')
   }
 
-  function deletedClient(client: Client) {
-    console.log(`Excluir ${client.nome}`)
+  async function deletedClient(client: Client) {
+    await repo.delete(client)
+    getAll()
   }
 
-  function saveClient(client: Client) {
-    console.log(client)
-    setVisible('table')
+  async function saveClient(client: Client) {
+    await repo.save(client)
+    getAll()
   }
 
   
